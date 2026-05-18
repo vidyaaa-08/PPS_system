@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+
+{% block title %}PPC SYSTEM{% endblock %}
+
+{% block css %}
+<style>
+    .dashboard{
+        width:100%;
+        max-width:1100px;
+        margin:auto;
+    }
+
+    .page-header{
+        display:flex;align-items:center;gap:16px;
+        margin-bottom:32px;
+    }
+    .header-icon{
+        width:48px;height:48px;border-radius:12px;
+        background:linear-gradient(135deg, var(--brand) 0%, #7c3aed 100%);
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 6px 16px var(--brand-glow);flex-shrink:0;
+    }
+    .header-icon i{color:#fff;font-size:20px}
+    .header-text h2{margin:0;font-size:24px;font-family:'Space Grotesk',sans-serif;color:var(--nav)}
+    .header-text p{margin:4px 0 0;color:var(--muted);font-size:14px}
+
+    .toggle-group{
+        display:inline-flex;background:#f1f5f9;border-radius:12px;
+        padding:4px;margin-bottom:28px;border:1px solid #e2e8f0;
+    }
+    .toggle-group a{
+        text-decoration:none;padding:10px 22px;border-radius:9px;
+        font-weight:600;font-size:14px;color:var(--muted);
+        transition:all 0.25s ease;display:flex;align-items:center;gap:8px;
+    }
+    .toggle-group a:hover{color:var(--nav)}
+    .toggle-group a.active{
+        background:#fff;color:var(--brand);
+        box-shadow:0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    /* Table Card Container */
+    .table-card{
+        background:var(--surface);padding:0;border-radius:16px;
+        box-shadow:0 4px 24px rgba(16,24,40,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+        overflow:hidden;margin-bottom:40px;border:1px solid rgba(255,255,255,0.6);
+    }
+    .card-header{
+        padding:20px 24px;border-bottom:1px solid #f1f5f9;
+        display:flex;align-items:center;justify-content:space-between;
+    }
+    .card-title{
+        font-weight:700;color:var(--nav);font-size:13px;
+        font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:17px;
+    }
+    .card-title i{color:var(--brand);font-size:15px}
+
+    .table-responsive{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+
+    table th{
+        background:#f8fafc;color:var(--muted);font-weight:600;
+        padding:14px 20px;text-align:left;font-size:12px;
+        text-transform:uppercase;letter-spacing:0.6px;
+        border-bottom:1px solid #e5e7eb;
+    }
+    table th.text-center, table td.text-center{text-align:center}
+
+    table td{
+        padding:16px 20px;border-bottom:1px solid #f3f4f6;
+        font-size:14px;color:#374151;vertical-align:middle;
+    }
+
+    /* Row Hover Effect */
+    tbody tr{transition:background 0.15s ease}
+    tbody tr:hover{background:#f8fafc}
+    tbody tr:last-child td{border-bottom:none}
+
+    .status-badge{
+        display:inline-flex;align-items:center;gap:6px;
+        padding:5px 14px;border-radius:50px;font-size:12.5px;font-weight:600;
+    }
+    .status-badge i{font-size:6px}
+    
+    .status-pending{
+        background:#fef3c7;color:#92400e;
+    }
+    .status-pending i{color:#d97706}
+
+    .status-completed{
+        background:#dcfce7;color:#166534;
+    }
+    .status-completed i{color:#16a34a}
+
+    /* Empty State */
+    .empty-state{
+        padding:60px 20px;text-align:center;color:var(--muted);
+    }
+    .empty-state i{font-size:40px;color:#d1d5db;margin-bottom:16px;display:block}
+    .empty-state p{font-size:15px;font-weight:500}
+    .empty-state small{font-size:13px;color:var(--muted-light)}
+
+    /* ─── Process Flow Pipeline Styles ─── */
+    .process-table th{
+        background:var(--nav);
+        color:#fff;
+        font-size:12px;
+        text-transform:none;
+        letter-spacing:0;
+        padding:9px 13px;
+        text-align:center;
+        border-right:1px solid rgba(255,255,255,0.08);
+        white-space:nowrap;
+        position:relative;
+    }
+    .process-table th:last-child{border-right:none}
+    
+    .step-num{
+        display:block;
+        font-size:10px;
+        opacity:0.5;
+        margin-bottom:6px;
+        font-weight:500;
+        letter-spacing:0.5px;
+    }
+
+    .process-table td{
+        text-align:center;
+        font-weight:600;
+        color:black;
+        font-family:'Space Grotesk',sans-serif;
+        font-size:13px;
+        padding:16px 12px;
+        border-right:1px solid #f3f4f6;
+        white-space:nowrap;
+        background:#f8fafc;
+    }
+    .process-table td:last-child{border-right:none}
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .page-header{flex-direction:column;align-items:flex-start;gap:12px}
+        table th, table td{padding:12px 14px;font-size:13px}
+        .card-header{padding:16px}
+        .process-table th, .process-table td{padding:12px 8px;font-size:11px}
+    }
+
+    .create-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 22px;
+    background:#2563eb;
+    color:#fff;
+    text-decoration:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:600;
+    transition:0.3s ease;
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+.create-btn:hover{
+    background:#1d4ed8;
+    transform:translateY(-2px);
+}
+
+.plus-icon{
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    color:#2563eb;
+    border-radius:50%;
+    font-size:20px;
+    font-weight:bold;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard">
+    
+    <!-- Page Header -->
+    <div class="page-header">
+  
+        <div class="header-text">
+            <h2>Production</h2>
+            <p>Track and manage your production orders</p>
+        </div>
+    </div>
+<a href="{% url 'create_order' %}" class="create-btn">
+    <span class="plus-icon">+</span> Create Order
+</a>   
+    <!-- Toggle Buttons -->
+    <div class="toggle-group">
+        <a href="/index" class="{% if not request.GET.status %}active{% endif %}">
+            <i class="fa-solid fa-list fa-sm"></i> All
+        </a>
+        <a href="?status=Pending" class="{% if request.GET.status == 'Pending' %}active{% endif %}">
+            <i class="fa-solid fa-clock fa-sm"></i> Pending
+        </a>
+        <a href="?status=Completed" class="{% if request.GET.status == 'Completed' %}active{% endif %}">
+            <i class="fa-solid fa-circle-check fa-sm"></i> Completed
+        </a>
+       
+    </div>
+
+    <!-- Orders Table -->
+    <!-- <div class="table-card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-clipboard-list"></i> Work Orders</div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order No</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th class="text-center">Qty</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td style="font-weight:600; color:var(--nav)">{{ order.order_no }}</td>
+                        <td>{{ order.order_type }}</td>
+                        <td>{{ order.category }}</td>
+                        <td class="text-center">{{ order.quantity }}</td>
+                        <td>{{ order.start_date }}</td>
+                        <td>{{ order.end_date }}</td>
+                        <td class="text-center">
+                            {% if order.status == "Pending" %}
+                                <span class="status-badge status-pending"><i class="fa-solid fa-circle"></i> Pending</span>
+                            {% else %}
+                                <span class="status-badge status-completed"><i class="fa-solid fa-circle"></i> Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fa-regular fa-folder-open"></i>
+                                <p>No Orders Found</p>
+                                <small>Try adjusting your filters or add a new order</small>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div> -->
+
+    <!-- Process Flow Pipeline Table -->
+  <div class="table-card">
+
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-diagram-project"></i>
+            Process Flow & SLA Pipeline
+        </div>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="process-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Order No</th>
+                    <th>Status</th>
+                    <th>
+                        <span class="step-num">STEP 01</span><br>
+                        Order Generation
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 02</span><br>
+                        PPC Planning
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 03</span><br>
+                        CAD
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 04</span><br>
+                        CAM
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 05</span><br>
+                        Casting / Wax
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 06</span><br>
+                        Grading / OTECH
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 07</span><br>
+                        Filling
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 08</span><br>
+                        Electro Polish
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 09</span><br>
+                        Pre-Polish
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 10</span><br>
+                        Diamond Bagging
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 11</span><br>
+                        Setting
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 12</span><br>
+                        Fitting
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 13</span><br>
+                        Final Polish
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 14</span><br>
+                        Rhodium
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 15</span><br>
+                        Ceramic
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 16</span><br>
+                        QA
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 17</span><br>
+                        Hallmarking
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 18</span><br>
+                        Certification
+                    </th>
+
+                    <th>
+                        <span class="step-num">STEP 19</span><br>
+                        FG (Finished)
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for order in orders %}
+
+                <tr>
+
+                    <td>
+                        {{ order.order_no }}
+                    </td>
+                    <td>
+                        {% if order.status == 'Pending' %}
+                            <span class="status-badge status-pending"><i class="fa-solid fa-circle"></i> Pending</span>
+                        {% else %}
+                            <span class="status-badge status-completed"><i class="fa-solid fa-circle-check"></i> Completed</span>
+                        {% endif %}
+                    </td>
+
+                    {% for p in order.processes %}
+                        <td>
+                            {% if p.end_date %}
+                                {{ p.end_date }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                    
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="21" style="text-align:center; padding:30px">
+                        No Orders Found
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

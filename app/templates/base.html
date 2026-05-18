@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>{% block title %}PPC System{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,900;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root{
+            --bg:#f6f8fb;
+            --surface:#ffffff;
+            --muted:#6b7280;
+            --muted-light:#9ca3af;
+            --brand:#2563eb;
+            --brand-600:#1d4ed8;
+            --brand-glow:rgba(37,99,235,0.25);
+            --nav:#0f1724;
+            --nav-light:#1e293b;
+            --accent:#f59e0b;
+            --border:rgba(255,255,255,0.08);
+            --nav-height:68px;
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+            font-family:'DM Sans',system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+            height:100%;
+            background:linear-gradient(180deg,var(--bg) 0%, #eef2ff 100%);
+            color:#0f1724;
+            display:flex;flex-direction:column;min-height:100vh;
+            overflow-x:hidden;
+            padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar{
+            position:sticky;top:0;z-index:100;
+            background:rgba(15,23,36,0.82);
+            backdrop-filter:blur(18px) saturate(180%);
+            -webkit-backdrop-filter:blur(18px) saturate(180%);
+            border-bottom:1px solid rgba(255,255,255,0.06);
+            height:var(--nav-height);
+        }
+        .navbar-inner{
+            max-width:1200px;margin:auto;
+            padding:0 28px;height:100%;
+            display:flex;align-items:center;justify-content:space-between;
+            gap:16px;
+        }
+
+        /* Logo */
+        .nav-left{display:flex;align-items:center;gap:14px;flex-shrink:0}
+        .logo-icon{
+            width:40px;height:40px;border-radius:10px;
+            background:linear-gradient(135deg,var(--brand) 0%,#7c3aed 100%);
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 4px 14px rgba(37,99,235,0.35);
+            position:relative;overflow:hidden;
+        }
+        .logo-icon::after{
+            content:'';position:absolute;inset:0;
+            background:linear-gradient(135deg,rgba(255,255,255,0.25) 0%,transparent 60%);
+            border-radius:inherit;
+        }
+        .logo-icon i{color:#fff;font-size:17px;position:relative;z-index:1}
+        .logo-text{display:flex;flex-direction:column;line-height:1.15}
+        .logo-text h2{
+            margin:0;font-size:17px;font-weight:700;
+            color:#fff;letter-spacing:-0.3px;
+            font-family:'Space Grotesk','DM Sans',sans-serif;
+        }
+        .logo-text small{color:var(--muted-light);font-size:11px;font-weight:400;letter-spacing:0.3px}
+
+        /* Nav links */
+        .nav-center{display:flex;align-items:center;gap:6px}
+        .nav-center a{
+            padding:7px 14px;border-radius:8px;text-decoration:none;
+            color:rgba(255,255,255,0.6);font-weight:500;font-size:14px;
+            transition:all 0.2s ease;position:relative;white-space:nowrap;
+        }
+        .nav-center a:hover{color:#fff;background:rgba(255,255,255,0.07)}
+        .nav-center a.active{color:#fff;background:rgba(255,255,255,0.1)}
+
+        /* Right side actions */
+        .nav-right{
+            display:flex;align-items:center;gap:10px;
+            flex-shrink:0; /* Prevent right side from shrinking and pushing hamburger off-screen */
+        }
+
+        /* User badge when logged in */
+        .user-badge{
+            display:flex;align-items:center;gap:10px;
+            padding:5px 14px 5px 5px;border-radius:50px;
+            background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.08);
+        }
+        .user-avatar{
+            width:32px;height:32px;border-radius:50%;
+            background:linear-gradient(135deg,#f59e0b,#ef4444);
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:13px;color:#fff;
+            text-transform:uppercase;
+        }
+        .user-name{color:rgba(255,255,255,0.8);font-size:13px;font-weight:500}
+
+        /* Nav buttons */
+        .nav-btn{
+            padding:8px 18px;border-radius:8px;text-decoration:none;
+            font-weight:600;font-size:13.5px;cursor:pointer;
+            transition:all 0.25s cubic-bezier(.4,0,.2,1);
+            border:none;display:inline-flex;align-items:center;gap:6px;
+            white-space:nowrap;
+        }
+        .nav-btn-ghost{
+            color:rgba(255,255,255,0.7);background:transparent;
+            border:1px solid rgba(255,255,255,0.1);
+        }
+        .nav-btn-ghost:hover{color:#fff;background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2)}
+
+        .nav-btn-primary{
+            color:#fff;
+            background:linear-gradient(135deg,var(--brand) 0%,#4f46e5 100%);
+            box-shadow:0 2px 12px var(--brand-glow);
+            border:1px solid transparent;
+        }
+        .nav-btn-primary:hover{
+            transform:translateY(-1px);
+            box-shadow:0 6px 24px var(--brand-glow);
+            filter:brightness(1.08);
+        }
+        .nav-btn-primary:active{transform:translateY(0);filter:brightness(0.96)}
+
+        .nav-btn-logout{
+            color:rgba(255,255,255,0.55);background:transparent;
+            border:1px solid rgba(255,255,255,0.06);font-weight:500;
+        }
+        .nav-btn-logout:hover{color:#f87171;background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.2)}
+
+        /* Mobile hamburger */
+        .hamburger{
+            display:none;
+            background:none;border:none;color:#fff;font-size:22px;
+            cursor:pointer;
+            width:44px;height:44px; /* Better touch target */
+            align-items:center;justify-content:center;
+            border-radius:8px;
+            transition:background 0.2s;
+        }
+        .hamburger:active{background:rgba(255,255,255,0.1)}
+
+        /* ─── MAIN CONTENT ─── */
+        .container{
+            width:100%;flex:1;
+            display:flex;justify-content:center;align-items:flex-start;
+            padding:36px 20px;
+        }
+
+        .card{background:var(--surface);padding:32px;border-radius:14px;max-width:720px;width:100%;box-shadow:0 8px 30px rgba(16,24,40,0.08)}
+        .card h2{margin:0 0 18px 0;color:var(--nav);font-size:20px}
+
+        .input-group{margin-bottom:14px}
+        .input-group label{display:block;margin-bottom:6px;font-weight:600;color:var(--muted);font-size:13.5px}
+        .input-group input,.input-group select,.input-group textarea{width:100%;padding:12px;border:1px solid #e6e9ef;border-radius:10px;background:transparent;outline:none;font-family:inherit;font-size:14px;transition:all 0.2s ease}
+        .input-group input:focus,.input-group select:focus{box-shadow:0 0 0 4px rgba(37,99,235,0.08);border-color:var(--brand)}
+
+        .btn{display:inline-block;padding:12px 16px;border-radius:10px;background:var(--brand);color:#fff;border:none;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s ease}
+        .btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+        .btn:active{transform:translateY(1px)}
+
+        .text-center{color:var(--muted);text-align:center;margin-top:14px}
+        .text-center a{color:var(--brand);text-decoration:none;font-weight:600}
+
+        .alerts{margin-bottom:12px}
+        .alert{padding:10px;border-radius:8px;font-size:14px}
+        .alert-success{background:#dcfce7;color:#065f46}
+        .alert-danger{background:#fee2e2;color:#7f1d1d}
+
+        
+       
+        /* Status pill */
+        .status-pill{
+            display:inline-flex;align-items:center;gap:6px;
+            padding:4px 12px;border-radius:50px;font-size:11.5px;
+            background:rgba(34,197,94,0.1);color:#4ade80;font-weight:500;
+        }
+        .status-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse-dot 2s infinite}
+        @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
+
+        /* ─── MOBILE NAV PANEL ─── */
+        .mobile-nav{
+            display:none;
+            position:fixed;top:var(--nav-height);left:0;right:0;bottom:0;z-index:99;
+            background:rgba(15,23,36,0.96);backdrop-filter:blur(20px);
+            padding:24px;flex-direction:column;gap:8px;
+            overflow-y:auto; -webkit-overflow-scrolling: touch;
+            animation:slide-down 0.3s ease;
+        }
+        .mobile-nav.open{display:flex}
+        @keyframes slide-down{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+        .mobile-nav a{
+            padding:16px;border-radius:10px;text-decoration:none;
+            color:rgba(255,255,255,0.7);font-weight:500;font-size:16px;
+            transition:all 0.2s;display:flex;align-items:center;gap:12px;
+        }
+        .mobile-nav a:hover{background:rgba(255,255,255,0.06);color:#fff}
+        .mobile-nav a i{width:24px;text-align:center;font-size:16px}
+
+        /* ─── RESPONSIVE ─── */
+       
+
+        @media(max-width:720px){
+            .nav-center{display:none}
+            .user-badge .user-name{display:none}
+            
+            /* Hide text buttons on mobile to save space (they are in the dropdown) */
+            .nav-btn { display: none; } 
+            
+            .hamburger{display:flex} /* Show Hamburger */
+            .nav-right{flex-shrink:0; gap: 12px;}
+            
+            .navbar-inner{padding:0 16px}
+            .container{padding:20px 16px}
+            .card{padding:20px}
+            
+            
+
+            /* iOS Input Zoom Fix: Inputs must be >= 16px font-size */
+            .input-group input, 
+            .input-group select, 
+            .input-group textarea, 
+            .input-group select option {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Small phones (iPhone SE, older Androids) */
+        @media(max-width:380px){
+            .logo-text h2{font-size:15px}
+            .logo-text small{display:none} /* Hide subtitle on very small screens */
+        }
+    </style>
+
+    {% block css %}{% endblock %}
+</head>
+<body>
+
+    <!-- ─── NAVBAR ─── -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="nav-left">
+                <a href="{% url 'dashboard' %}" class="logo-icon" style="text-decoration:none">
+                    <i class="fa-solid fa-chart-gantt"></i>
+                </a>
+                <a href="{% url 'dashboard' %}" class="logo-text" style="text-decoration:none">
+                    <h2>PPC Planning</h2>
+                    <small>Production Control System</small>
+                </a>
+            </div>
+
+            <div class="nav-center">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}">
+                        <i class="fa-solid fa-grid-2 fa-sm" style="margin-right:4px"></i>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'index' %}" class="active">
+                        <i class="fa-solid fa-list-check fa-sm" style="margin-right:4px"></i>
+                        Production Workflow
+                    </a>
+                   
+                {% endif %}
+            </div>
+
+            <div class="nav-right">
+                {% if request.user.is_authenticated %}
+                    <div class="user-badge">
+                        <div class="user-avatar">{{ request.user.username|first }}</div>
+                        <span class="user-name">{{ request.user.username }}</span>
+                    </div>
+                    
+                    <a href="{% url 'logout' %}" class="nav-btn nav-btn-logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket fa-sm"></i> <span>Logout</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'signin' %}" class="nav-btn nav-btn-ghost">Login</a>
+                    <a href="{% url 'register' %}" class="nav-btn nav-btn-primary">
+                        <i class="fa-solid fa-user-plus fa-sm"></i> Register
+                    </a>
+                {% endif %}
+                
+                <button class="hamburger" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile slide-down panel -->
+    <div id="mobileNav" class="mobile-nav">
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'dashboard' %}">
+                <i class="fa-solid fa-grid-2"></i> Dashboard
+            </a>
+            <a href="{% url 'index' %}">
+                <i class="fa-solid fa-list-check"></i> Production Workflow
+            </a>
+           
+            <a href="{% url 'logout' %}">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </a>
+        {% else %}
+            <a href="{% url 'signin' %}">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
+            </a>
+            <a href="{% url 'register' %}">
+                <i class="fa-solid fa-user-plus"></i> Register
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+  
+
+    <script>
+        /* Close mobile nav on link click */
+        document.querySelectorAll('.mobile-nav a').forEach(function(link){
+            link.addEventListener('click', function(){
+                document.getElementById('mobileNav').classList.remove('open');
+            });
+        });
+
+        /* Close mobile nav on outside click */
+        document.addEventListener('click', function(e){
+            var mobileNav = document.getElementById('mobileNav');
+            var hamburger = document.querySelector('.hamburger');
+            if(mobileNav && hamburger && !mobileNav.contains(e.target) && !hamburger.contains(e.target)){
+                mobileNav.classList.remove('open');
+            }
+        });
+
+        /* Navbar shadow on scroll */
+        window.addEventListener('scroll', function(){
+            var nav = document.querySelector('.navbar');
+            if(nav){
+                if(window.scrollY > 10){
+                    nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.2)';
+                } else {
+                    nav.style.boxShadow = 'none';
+                }
+            }
+        });
+    </script>
+
+    {% block js %}{% endblock %}
+</body>
+</html>
