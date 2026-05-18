@@ -104,7 +104,7 @@
     .process-table th{
         background:var(--nav);
         color:#fff;
-        font-size:12px;
+        font-size:9px;
         text-transform:none;
         letter-spacing:0;
         padding:9px 13px;
@@ -117,7 +117,7 @@
     
     .step-num{
         display:block;
-        font-size:10px;
+        font-size:12px;
         opacity:0.5;
         margin-bottom:6px;
         font-weight:500;
@@ -127,7 +127,7 @@
     .process-table td{
         text-align:center;
         font-weight:600;
-        color:black;
+        color:var(--brand);
         font-family:'Space Grotesk',sans-serif;
         font-size:13px;
         padding:16px 12px;
@@ -208,57 +208,6 @@
         </a>
        
     </div>
-
-    <!-- Orders Table -->
-    <!-- <div class="table-card">
-        <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-clipboard-list"></i> Work Orders</div>
-        </div>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order No</th>
-                        <th>Type</th>
-                        <th>Category</th>
-                        <th class="text-center">Qty</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th class="text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in orders %}
-                    <tr>
-                        <td style="font-weight:600; color:var(--nav)">{{ order.order_no }}</td>
-                        <td>{{ order.order_type }}</td>
-                        <td>{{ order.category }}</td>
-                        <td class="text-center">{{ order.quantity }}</td>
-                        <td>{{ order.start_date }}</td>
-                        <td>{{ order.end_date }}</td>
-                        <td class="text-center">
-                            {% if order.status == "Pending" %}
-                                <span class="status-badge status-pending"><i class="fa-solid fa-circle"></i> Pending</span>
-                            {% else %}
-                                <span class="status-badge status-completed"><i class="fa-solid fa-circle"></i> Completed</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
-                                <i class="fa-regular fa-folder-open"></i>
-                                <p>No Orders Found</p>
-                                <small>Try adjusting your filters or add a new order</small>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div> -->
 
     <!-- Process Flow Pipeline Table -->
   <div class="table-card">
