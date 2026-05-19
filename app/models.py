@@ -1,7 +1,5 @@
 from django.db import models
 from datetime import timedelta
-
-
 # Create your models here.
 
 class Order(models.Model):
@@ -71,7 +69,7 @@ class Order(models.Model):
 
     def __str__(self):
         return self.order_no
-
+    
 class ProcessStep(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     process_name = models.CharField(max_length=100)
@@ -82,6 +80,76 @@ class ProcessStep(models.Model):
 
     def __str__(self):
         return self.process_name
+
+def calculate_end_date(start_date, days):
+    from datetime import timedelta
+
+    current_date = start_date
+    remaining_days = int(days)
+
+    while remaining_days > 0:
+        current_date += timedelta(days=1)
+
+        # Sunday skip
+        if current_date.weekday() != 6:
+            remaining_days -= 1
+
+    return current_date
+
+def _compute_order_final_end_date(order):
+    import math
+
+    default_steps = [
+        {'name': 'Order Generation', 'sla': 1},
+        {'name': 'PPC Planning', 'sla': 0},
+        {'name': 'CAD', 'sla': 7},
+        {'name': 'CAM', 'sla': 2},
+        {'name': 'Casting / Wax', 'sla': 2},
+        {'name': 'Grading / OTECH', 'sla': 1.5},
+        {'name': 'Filling', 'capacity': 10},
+        {'name': 'Electro Polish', 'capacity': 15},
+        {'name': 'Pre-Polish', 'capacity': 15},
+        {'name': 'Diamond Bagging', 'sla': 0},
+        {'name': 'Setting', 'capacity': 3000},
+        {'name': 'Fitting', 'capacity': 10},
+        {'name': 'Final Polish', 'capacity': 20},
+        {'name': 'Rhodium', 'capacity': 20},
+        {'name': 'Ceramic', 'capacity': 30},
+        {'name': 'QA', 'capacity': 20},
+        {'name': 'Hallmarking', 'sla': 1},
+        {'name': 'Certification', 'sla': 0},
+        {'name': 'FG (Finished)', 'sla': 0},
+    ]
+
+    current = order.start_date
+    last_end = None
+
+    for step in default_steps:
+
+        # CAD Logic
+        if step['name'] == 'CAD':
+            days = 3 if order.style_type == 'Repeat' else 7
+
+        # Capacity Logic
+        elif 'capacity' in step:
+            days = math.ceil(order.quantity / step['capacity'])
+
+        # Normal SLA
+        else:
+            days = math.ceil(step['sla'])
+
+        # Calculate end date
+        if days > 0:
+            end_date = calculate_end_date(current, days)
+        else:
+            end_date = current
+
+        last_end = end_date
+
+        # IMPORTANT FIX
+        current = end_date
+
+    return last_end
 
 def calculate_end_date(start_date, days):
     """Return end date after advancing `days` working days from `start_date`.
@@ -108,7 +176,7 @@ def calculate_end_date(start_date, days):
     remaining_days = int(days)
     while remaining_days > 0:
         current_date = current_date + timedelta(days=1)
-        # skip Sundays (weekday() == 6)
+        # skip Sundays 
         if current_date.weekday() != 6:
             remaining_days -= 1
     return current_date
@@ -122,12 +190,9 @@ def _compute_order_final_end_date(order):
 
     import math, datetime
 
-    # Extended process flow with SLA / capacity
-    # For capacity-based steps, use 'capacity' (items per day) and compute days = ceil(quantity / capacity)
     default_steps = [
         {'name': 'Order Generation', 'sla': 1},
         {'name': 'PPC Planning', 'sla': 0},
-        # CAD depends on style_type: New -> 7 days, Repeat -> 3 days
         {'name': 'CAD', 'sla': 7},
         {'name': 'CAM', 'sla': 2},
         {'name': 'Casting / Wax', 'sla': 2},
@@ -147,7 +212,7 @@ def _compute_order_final_end_date(order):
         {'name': 'FG (Finished)', 'sla': 0},
     ]
 
-    # gather overrides from ProcessStep rows for this order
+
     steps_qs = ProcessStep.objects.filter(order=order)
     overrides = {p.process_name: p.sla_days for p in steps_qs}
 
@@ -203,9 +268,7 @@ from django.dispatch import receiver
 def _order_post_save(sender, instance, **kwargs):
     """After an Order is saved, compute and persist its end_date if missing or outdated."""
     final = _compute_order_final_end_date(instance)
-    # Only auto-set end_date when it's empty (allow manual admin edits to persist)
     if final and instance.end_date is None:
-        # update without triggering another save signal loop
         sender.objects.filter(pk=instance.pk).update(end_date=final)
 
 
@@ -214,7 +277,6 @@ def _processstep_post_save(sender, instance, **kwargs):
     """When a ProcessStep is added/updated, recompute the related Order end_date."""
     order = instance.order
     final = _compute_order_final_end_date(order)
-    # Only update Order.end_date if it's not been set manually.
     if final and order.end_date is None:
         Order.objects.filter(pk=order.pk).update(end_date=final)
 

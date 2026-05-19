@@ -104,7 +104,7 @@
     .process-table th{
         background:var(--nav);
         color:#fff;
-        font-size:9px;
+        font-size:15px;
         text-transform:none;
         letter-spacing:0;
         padding:9px 13px;
@@ -206,7 +206,6 @@
         <a href="?status=Completed" class="{% if request.GET.status == 'Completed' %}active{% endif %}">
             <i class="fa-solid fa-circle-check fa-sm"></i> Completed
         </a>
-       
     </div>
 
     <!-- Process Flow Pipeline Table -->
@@ -224,16 +223,13 @@
         <table class="process-table">
 
             <thead>
-
                 <tr>
-
                     <th>Order No</th>
                     <th>Status</th>
                     <th>
                         <span class="step-num">STEP 01</span><br>
                         Order Generation
                     </th>
-
                     <th>
                         <span class="step-num">STEP 02</span><br>
                         PPC Planning
