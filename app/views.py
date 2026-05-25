@@ -21,7 +21,11 @@ def dashboard(request):
 from .models import Order, ProcessStep, calculate_end_date
 from django.db.models import Sum
 import math
+
 def index(request):
+
+    from datetime import timedelta
+    import math
 
     status = request.GET.get('status')
 
@@ -30,7 +34,7 @@ def index(request):
     else:
         orders = Order.objects.all()
 
-    # Extended process flow with SLA / capacity (matches model logic)
+    # Process Flow
     default_steps = [
         {'name': 'Order Generation', 'sla': 1},
         {'name': 'PPC Planning', 'sla': 0},
@@ -54,18 +58,23 @@ def index(request):
     ]
 
     orders = list(orders)
+
     for order in orders:
+
+        # starting cursor for pipeline
         current = order.start_date
 
-        # ProcessStep Overrides
+        # Overrides from DB
         steps_qs = ProcessStep.objects.filter(order=order)
         overrides = {p.process_name: p.sla_days for p in steps_qs}
 
         order.processes = []
+        previous_end_date = None
 
         for step in default_steps:
             name = step['name']
 
+            # Determine days
             if name == 'CAD':
                 sla_value = 3 if getattr(order, 'style_type', 'New') == 'Repeat' else 7
                 sla = overrides.get(name, sla_value)
@@ -78,39 +87,56 @@ def index(request):
                         days = 1
                 else:
                     days = 0
-                sla = overrides.get(name, None)
-                if sla is not None:
-                    days = math.ceil(sla) if sla and sla > 0 else 0
+                # override support
+                sla_override = overrides.get(name)
+                if sla_override is not None:
+                    days = math.ceil(sla_override)
             else:
                 sla = overrides.get(name, step.get('sla', 0))
                 days = math.ceil(sla) if sla and sla > 0 else 0
 
+            # If this step requires 0 days, it should happen on previous end_date (same day)
+            # Otherwise start on current cursor.
+            start_for_step = previous_end_date if (previous_end_date is not None and days == 0) else current
+
+            # Calculate end_date for this step
             if days > 0:
-                end_date = calculate_end_date(current, days)
+                end_date = calculate_end_date(start_for_step, days)
             else:
-                end_date = current
+                end_date = start_for_step
 
-            order.processes.append({
-                'name': name,
-                'computed_days': days,
-                'end_date': end_date,
-            })
+            order.processes.append({'name': name, 'computed_days': days, 'end_date': end_date})
 
-            from datetime import timedelta
-            next_day = end_date + timedelta(days=1)
-            if next_day.weekday() == 6:
-                next_day += timedelta(days=1)
-            current = next_day
+            # update previous_end_date
+            previous_end_date = end_date
 
-        order.final_expected = order.processes[-1]['end_date'] if order.processes else order.end_date
+            # compute next current: for 0-day steps remain on same day, else move to next working day
+            if days == 0:
+                current = end_date
+            else:
+                next_day = end_date + timedelta(days=1)
+                if next_day.weekday() == 6:
+                    next_day += timedelta(days=1)
+                current = next_day
+
+        # Final Expected Date
+        order.final_expected = (
+            order.processes[-1]['end_date']
+            if order.processes
+            else order.end_date
+        )
+
         order.expected = order.final_expected
 
     context = {
         'orders': orders
     }
 
-    return render(request, 'index.html', context)
-
+    return render(
+        request,
+        'index.html',
+        context
+    ) 
 def logout_view(request):
     logout(request)
     return redirect('signin')
