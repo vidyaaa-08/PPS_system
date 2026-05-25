@@ -137,6 +137,7 @@ def index(request):
         'index.html',
         context
     ) 
+
 def logout_view(request):
     logout(request)
     return redirect('signin')
